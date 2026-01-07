@@ -1,16 +1,44 @@
-# React + Vite
+# Frontend React (Vite + Nginx)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA qui consomme deux APIs :
+- `VITE_API_URL` → API core (`tp-mvc-poo-lite`, port 3000) pour Users/Products (in-memory)
+- `VITE_BOOKS_URL` → API books/profiles (`bookly-hybrid`, port 4000) pour Books/Profiles (Postgres + Mongo)
 
-Currently, two official plugins are available:
+## Prérequis
+- Node 20+ (dev ou build local)
+- Docker si vous voulez construire l’image
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Scripts (dev local)
+```bash
+npm install
+npm run dev         # http://localhost:5173
+npm run build       # build prod dans dist/
+npm run preview     # sert le build
+```
+Variables à poser en dev (`.env.local` par exemple) :
+```
+VITE_API_URL=http://localhost:3000
+VITE_BOOKS_URL=http://localhost:4000
+```
 
-## React Compiler
+## Build Docker (utilisé par docker-compose)
+Multi-stage :
+1) build Vite sur `node:20-alpine`
+2) serveur statique `nginx:1.27-alpine` avec fallback SPA (`nginx.conf`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Commande de build :
+```bash
+docker build \
+  --build-arg VITE_API_URL=http://api-core:3000 \
+  --build-arg VITE_BOOKS_URL=http://api-books:4000 \
+  -t frontend-react-api .
+```
 
-## Expanding the ESLint configuration
+## Routes et pages
+- `/` : Users (API core)
+- `/products` : Products (API core)
+- `/books` : Books (API books)
+- `/profiles` : Profiles (API books, Mongo, liés aux users SQL)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Adapter les URLs d’API
+Si les hôtes/ports changent, modifier `VITE_API_URL` / `VITE_BOOKS_URL` (fichier env ou args de build) et re-builder le front si c’est pour Docker/Nginx.

@@ -1,0 +1,87 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bookly
+      POSTGRES_PASSWORD: booklypwd
+      POSTGRES_DB: bookly
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ../bookly-hybrid/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval \"db.adminCommand('ping')\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-books:
+    build:
+      context: ../bookly-hybrid
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: bookly
+      PGUSER: bookly
+      PGPASSWORD: booklypwd
+      MONGO_URI: mongodb://mongo:27017/bookly
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    restart: unless-stopped
+
+  api-core:
+    build:
+      context: ../tp-mvc-poo-lite
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      args:
+        # URLs vues depuis le navigateur (machine hôte)
+        VITE_API_URL: http://localhost:3000
+        VITE_BOOKS_URL: http://localhost:4000
+    depends_on:
+      api-core:
+        condition: service_started
+      api-books:
+        condition: service_started
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  mongo_data:
+
+

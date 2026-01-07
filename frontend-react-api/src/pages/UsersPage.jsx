@@ -7,12 +7,12 @@ export default function UsersPage() {
   
   // form
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [age, setAge] = useState("");
 
   // édition inline
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
+  const [editAge, setEditAge] = useState("");
 
   async function load() {
     try {
@@ -33,10 +33,10 @@ export default function UsersPage() {
   async function createUser(e) {
     e.preventDefault();
     try {
-      const created = await api.post("/api/users", { name, email });
+      const created = await api.post("/api/users", { name, age: Number(age) });
       setUsers((u) => [...(Array.isArray(u) ? u : u.data), created]);
       setName("");
-      setEmail("");
+      setAge("");
     } catch (e) {
       alert(e.message);
     }
@@ -59,14 +59,14 @@ export default function UsersPage() {
   function startEdit(u) {
     setEditingId(u.id);
     setEditName(u.name);
-    setEditEmail(String(u.email || ""));
+    setEditAge(String(u.age ?? ""));
   }
   function cancelEdit() {
     setEditingId(null);
   }
   async function saveEdit(id) {
     try {
-      const updated = await api.put(`/api/users/${id}`, { name: editName, email: editEmail });
+      const updated = await api.put(`/api/users/${id}`, { name: editName, age: Number(editAge) });
       const current = Array.isArray(users) ? users : users.data;
       const next = current.map((u) => (u.id === id ? updated : u));
       setUsers(Array.isArray(users) ? next : { ...(users || {}), data: next });
@@ -95,9 +95,11 @@ export default function UsersPage() {
           required
         />
         <input
-          placeholder="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          placeholder="age"
+          type="number"
+          min="0"
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
           required
         />
         <button>Ajouter</button>
@@ -112,7 +114,7 @@ export default function UsersPage() {
           <tr>
             <th align="left">ID</th>
             <th align="left">Name</th>
-            <th align="left">Email</th>
+            <th align="left">Age</th>
             <th align="left">Actions</th>
           </tr>
         </thead>
@@ -131,8 +133,10 @@ export default function UsersPage() {
                   </td>
                   <td>
                     <input
-                      value={editEmail}
-                      onChange={(e) => setEditEmail(e.target.value)}
+                      type="number"
+                      min="0"
+                      value={editAge}
+                      onChange={(e) => setEditAge(e.target.value)}
                     />
                   </td>
                   <td>
@@ -143,7 +147,7 @@ export default function UsersPage() {
               ) : (
                 <>
                   <td>{u.name}</td>
-                  <td>{u.email}</td>
+                  <td>{u.age}</td>
                   <td>
                     <button onClick={() => startEdit(u)}>Éditer</button>
                     <button onClick={() => deleteUser(u.id)}>Supprimer</button>
