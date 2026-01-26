@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bookly-ingress
+  namespace: bookly-app
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Pour un Ingress Controller Nginx
+    # kubernetes.io/ingress.class: nginx
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: bookly.local
+    # Note: Pour un déploiement en production, remplacez par votre domaine
+    # ex: app.bookly.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+      - path: /api/core
+        pathType: Prefix
+        backend:
+          service:
+            name: api-core
+            port:
+              number: 3000
+      - path: /api/books
+        pathType: Prefix
+        backend:
+          service:
+            name: api-books
+            port:
+              number: 4000
+  # Pour activer TLS (HTTPS) en production :
+  # tls:
+  # - hosts:
+  #   - bookly.local
+  #   secretName: bookly-tls

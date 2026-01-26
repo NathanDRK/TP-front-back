@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: bookly-app
+data:
+  POSTGRES_DB: "bookly"
+  POSTGRES_USER: "bookly"
+  PGHOST: "postgres"
+  PGPORT: "5432"
+  PGDATABASE: "bookly"
+  PGUSER: "bookly"
+  MONGO_URI: "mongodb://mongo:27017/bookly"
+  NODE_ENV: "production"
+  PORT_API_CORE: "3000"
+  PORT_API_BOOKS: "4000"
+  VITE_API_URL: "http://api-core:3000"
+  VITE_BOOKS_URL: "http://api-books:4000"

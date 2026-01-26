@@ -159,7 +159,45 @@ Après redémarrage, les données Postgres/Mongo doivent rester présentes.
 
 ---
 
-## 8. Schéma d’architecture
+## 8. Déploiement Kubernetes
+
+L'application peut également être déployée sur un cluster Kubernetes avec auto-scaling, rolling updates et Ingress.
+
+### 📦 Manifestes Kubernetes
+
+Tous les manifestes sont disponibles dans le dossier `k8s/` :
+- **Deployments** : postgres, mongo, api-core, api-books, frontend
+- **Services** : ClusterIP pour chaque service
+- **Ingress** : Point d'entrée HTTP/HTTPS
+- **HPA** : Auto-scaling horizontal (2-10 replicas pour les APIs, 2-5 pour le frontend)
+- **PVC** : Volumes persistants pour PostgreSQL et MongoDB
+- **ConfigMaps & Secrets** : Configuration et credentials
+
+### 🚀 Déploiement rapide
+
+```bash
+# Depuis la racine du projet
+cd k8s
+kubectl apply -k .
+```
+
+### 📚 Documentation complète
+
+Consultez **[k8s/README.md](k8s/README.md)** pour :
+- Instructions détaillées de déploiement
+- Configuration de l'auto-scaling (HPA)
+- Rolling updates
+- Externalisation des bases de données (recommandé en production)
+- Accès via Ingress ou Port-Forward
+- Commandes utiles pour le monitoring et le debugging
+
+### 🔗 Lien GitHub
+
+Projet disponible sur : **https://github.com/NathanDRK/Docker**
+
+---
+
+## 9. Schéma d'architecture
 
 Voir `docs/architecture.md` (diagramme mermaid) pour les conteneurs, réseaux, volumes et flux principaux.
 

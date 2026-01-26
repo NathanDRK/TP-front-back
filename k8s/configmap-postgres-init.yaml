@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-script
+  namespace: bookly-app
+data:
+  init.sql: |
+    -- Création des tables
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL UNIQUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS books (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      author VARCHAR(255) NOT NULL,
+      available BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- Données de démo
+    INSERT INTO users (name, email) VALUES
+      ('Alice', 'alice@example.com'),
+      ('Bob', 'bob@example.com')
+    ON CONFLICT (email) DO NOTHING;
+
+    INSERT INTO books (title, author, available) VALUES
+      ('1984', 'George Orwell', true),
+      ('Le Seigneur des Anneaux', 'J.R.R. Tolkien', true)
+    ON CONFLICT DO NOTHING;

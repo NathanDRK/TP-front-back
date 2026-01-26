@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-books
+  namespace: bookly-app
+  labels:
+    app: api-books
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-books
+  template:
+    metadata:
+      labels:
+        app: api-books
+    spec:
+      containers:
+      - name: api-books
+        image: tpfront-back-api-books:latest
+        # Note: Remplacez par votre registry (ex: docker.io/username/api-books:tag)
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 4000
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: NODE_ENV
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: PORT_API_BOOKS
+        - name: PGHOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: PGHOST
+        - name: PGPORT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: PGPORT
+        - name: PGDATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: PGDATABASE
+        - name: PGUSER
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: PGUSER
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secrets
+              key: PGPASSWORD
+        - name: MONGO_URI
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: MONGO_URI
+        livenessProbe:
+          httpGet:
+            path: /api/books
+            port: 4000
+          initialDelaySeconds: 40
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/books
+            port: 4000
+          initialDelaySeconds: 20
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
